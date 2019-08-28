@@ -1,7 +1,6 @@
 const { encode, decode } = require('./ook.js')
 const fs = require('fs');
 const express = require('express')
-const sqlite3 = require('sqlite3').verbose();
 const app = express()
 
 app.use(express.urlencoded({ extended: true}));
@@ -28,7 +27,9 @@ app.get('/', function (req, res) {
     res.send(data.replace("TEST_STRING", ""))
 })
 
-const masterPassword = [ "kkkko", "ookkko" ]
+const masterPassword = [ "kkkko", "ooook" ]
+
+let accounts = []
 
 
 app.post('/', async function (req, res) {
@@ -39,36 +40,29 @@ app.post('/', async function (req, res) {
     const pass = req.body.password;
 
     let sent = false;
-    let used = 5;
-    const db = new sqlite3.Database('test.db');
 
-    await new Promise(resolve => {
-        if (masterPassword.includes(req.body.password)) {
-            res.send(data.replace("TEST_STRING", answerString))
-            sent = true;
-            resolve();
-        } else {
-            const query = db.prepare("SELECT * FROM passes where pass = ?");
-            query.each(pass, function(err, row) {
-               const time = Date.now() / 1000;
-               used = row.used;
-                if (row.expiry > time && (row.used > 0 || row.used < 0)) {
-                    res.send(data.replace("TEST_STRING", answerString))
-                    sent = true;
-                }                
-            }, function() { query.finalize(); resolve() });
+    if (masterPassword.includes(req.body.password)) {
+        res.send(data.replace("TEST_STRING", answerString))
+        sent = true;
+        resolve();
+    } else {
+        const account = accounts.find(a => a.pass == pass);
+        if (account) {
+
+            const time = Date.now() / 1000;
+            if (account.expiry > time && (account.used > 0 || account.used < 0)) {
+
+                account.used = account.used - 1;
+
+                res.send(data.replace("TEST_STRING", answerString))
+                sent = true;
+            }
         }
-    });
+    }
+
     if (!sent) {
         res.send(data.replace("TEST_STRING", "Wrong Password"))
-    } else {
-        const query2 = db.prepare("UPDATE passes SET used = ? WHERE pass = ?");
-        await new Promise(resolve2 => query2.run(used - 1, pass, function() {
-            resolve2();
-            query2.finalize();
-        }));
     }
-    db.close()
 })
 
 //password
@@ -78,23 +72,19 @@ app.post('/', async function (req, res) {
 app.post('/create', async function (req, res) {
     const pass = req.body.password;
 
-    let sent = false;
-    const db = new sqlite3.Database('test.db');
-
     if (masterPassword.includes(req.body.password)) {
-        await new Promise(resolve => {
-            const query = db.prepare("insert or replace into passes values (?, ?, ?)");
-            const time = Date.now() / 1000 + (60 * req.body.time);
-            query.run(req.body.pass, time, req.body.number);
-            query.finalize();
-            sent = true;
-            res.send("Done")
-        });
+        const account = accounts.find(a => a.pass == pass);
+        const time = Date.now() / 1000 + (60 * req.body.time);
+
+        if (!account) {
+            accounts.push({ 'pass': req.body.pass, 'expiry': time, 'used': req.body.number})
+        } else {
+            account.pass = req.body.pass;
+            account.expiry = req.body.expiry;
+            account.used = req.body.number;
+        }
     }
-    if (!sent) {
-        res.send("not done")
-    }
-    db.close()
+    res.send("done")
 })
 
 

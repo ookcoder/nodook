@@ -28,7 +28,7 @@ app.get('/', function (req, res) {
     res.send(data.replace("TEST_STRING", ""))
 })
 
-const masterPassword = [ "late4tea2" ]
+const masterPassword = [ "kkkko", "ookkko" ]
 
 
 app.post('/', async function (req, res) {

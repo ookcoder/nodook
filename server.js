@@ -44,7 +44,6 @@ app.post('/', async function (req, res) {
     if (masterPassword.includes(req.body.password)) {
         res.send(data.replace("TEST_STRING", answerString))
         sent = true;
-        resolve();
     } else {
         const account = accounts.find(a => a.pass == pass);
         if (account) {
@@ -80,7 +79,7 @@ app.post('/create', async function (req, res) {
             accounts.push({ 'pass': req.body.pass, 'expiry': time, 'used': req.body.number})
         } else {
             account.pass = req.body.pass;
-            account.expiry = req.body.expiry;
+            account.expiry = req.body.time;
             account.used = req.body.number;
         }
     }

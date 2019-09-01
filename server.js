@@ -6,28 +6,12 @@ const app = express()
 app.use(express.urlencoded({ extended: true}));
 
 
-// const db = new sqlite3.Database('test.db');
-// db.serialize(function() {
-//     db.run("CREATE TABLE IF NOT EXISTS passes (pass TEXT PRIMARY KEY, expiry INTEGER, used INTEGER)");
-   
-//     // var stmt = db.prepare("INSERT INTO passes VALUES (?, ?, ?)");
-//     // const time = Date.now() / 1000 + (60);
-//     // stmt.run("test", time, 2);
-//     // stmt.finalize();
-   
-//     // db.each("SELECT rowid AS id, info FROM passes", function(err, row) {
-//     //     console.log(row.id + ": " + row.info);
-//     // });
-// });
-
-// db.close()
-
 app.get('/', function (req, res) {
     data = fs.readFileSync('./main.html', 'utf8')
     res.send(data.replace("TEST_STRING", ""))
 })
 
-const masterPassword = [ "kkkko", "ooook" ]
+const masterPassword = [ "ooook" ]
 
 let accounts = []
 
